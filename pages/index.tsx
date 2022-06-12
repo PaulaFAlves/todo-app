@@ -1,58 +1,24 @@
 import { GetServerSideProps } from "next";
-import { useState } from "react";
 import { getAllTodos, Todo } from "../lib/db";
+import AddTodo from "../components/AddTodo";
+import { useEffect, useState } from "react";
+import Nav from "../components/Nav";
+import axios from "axios";
+import useSWR from "swr";
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  const todos = await getAllTodos();
 
-  return {
-    props: {
-      todos,
-    },
-  };
-};
+const Home = () => {
+  const { data: todos } = useSWR<Todo[]>('/api/todo')
 
-interface PostProps {
-  todos: Todo[];
-}
-
-const Home = ({ todos }: PostProps) => {
-  const [description, setDescription] = useState("");
-
-  const handleClick = async (e : any) => {
-    e.preventDefault()  
-
-    await fetch('/api/todo', {
-      method: 'POST',
-      body: JSON.stringify(description)
-    })
+  if (!todos) {
+    return <h1>Carregando</h1>
   }
 
   return (
     <div className="h-screen bg-gray-500">
-      <nav className="flex justify-center p-4 bg-gray-600">
-        <h1 className="text-white text-2xl font-bold">
-          Feedback Traversy Media
-        </h1>
-      </nav>
+      <Nav />
       <div>
-        <form className="flex justify-center mt-10">
-          <div className="bg-gray-50 p-8 rounded-lg">
-            <h1 className="text-center mb-4">Lista de Todos</h1>
-            <div className="flex space-x-2 p-2 bg-white rounded-md">
-              <input
-                value={description}
-                onChange={e => setDescription(e.currentTarget.value)}
-                type="text"
-                placeholder="Write here..."
-                className="w-full outline-none"
-              />
-              <button className="bg-green-500 px-2 py-1 rounded-md text-white font-semibold" onClick={handleClick}>
-                send
-              </button>
-            </div>
-          </div>
-        </form>
+        <AddTodo />
         <div>
           {todos?.map((item, idx) => (
             <div key={idx} className="flex justify-center">
